@@ -1,4 +1,4 @@
-package com.mottainai.mottainai_survey
+package com.mottainai.customer
 
 import io.flutter.embedding.android.FlutterActivity
 
