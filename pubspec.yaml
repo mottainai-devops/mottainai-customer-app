@@ -12,41 +12,40 @@ dependencies:
   cupertino_icons: ^1.0.8
 
   # HTTP & Networking
-  http: ^1.2.2
-  dio: ^5.7.0
+  http: ^1.6.0
+  dio: ^5.9.2
 
   # State Management
-  provider: ^6.1.1
+  provider: ^6.1.5
 
   # Local Storage
-  shared_preferences: ^2.3.3
-  flutter_secure_storage: ^9.2.2
+  shared_preferences: ^2.5.5
+  flutter_secure_storage: ^10.0.0
 
   # Navigation
   go_router: ^14.6.2
 
   # UI Components
-  flutter_svg: ^2.0.10+1
+  flutter_svg: ^2.2.4
   cached_network_image: ^3.4.1
   shimmer: ^3.0.0
-  pinput: ^5.0.0
-  intl: ^0.19.0
-  url_launcher: ^6.3.1
-  package_info_plus: ^8.1.3
+  pinput: ^6.0.2
+  intl: ^0.20.2
+  url_launcher: ^6.3.2
+  package_info_plus: ^10.0.0
 
-  # Paystack
-  flutter_paystack: ^2.0.0
+  # Paystack (latest available version)
+  flutter_paystack: ^1.0.7
 
   # Firebase (FCM push notifications)
-  firebase_core: ^3.8.0
-  firebase_messaging: ^15.1.6
-  flutter_local_notifications: ^18.0.1
+  firebase_core: ^4.7.0
+  firebase_messaging: ^16.2.0
+  flutter_local_notifications: ^21.0.0
 
   # File handling
   path_provider: ^2.1.5
-  open_file: ^3.5.10
+  open_file: ^3.5.11
   path: ^1.9.1
-
 
 dev_dependencies:
   flutter_test:
