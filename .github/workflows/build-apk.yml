@@ -1,0 +1,71 @@
+name: Build Customer App APK
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:  # Allow manual trigger
+jobs:
+  build:
+    name: Build APK
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      
+      - name: Setup Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.27.4'
+          channel: 'stable'
+      
+      - name: Get dependencies
+        run: flutter pub get
+      
+      - name: Analyze code
+        run: flutter analyze
+        continue-on-error: true
+      
+      - name: Build APK (Debug)
+        run: flutter build apk --debug
+      
+      - name: Build APK (Release - Fat APK for all architectures)
+        run: flutter build apk --release
+      
+      - name: Rename APK with version
+        run: |
+          VERSION=$(grep 'version:' pubspec.yaml | head -1 | awk '{print $2}' | cut -d'+' -f1)
+          cp build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/mottainai-customer-app-v${VERSION}.apk
+          echo "APK renamed to mottainai-customer-app-v${VERSION}.apk"
+      
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: build/app/outputs/flutter-apk/app-debug.apk
+      
+      - name: Upload Release APK (Fat)
+        uses: actions/upload-artifact@v4
+        with:
+          name: mottainai-customer-app-release
+          path: build/app/outputs/flutter-apk/mottainai-customer-app-v*.apk
+      
+      - name: Create Release Info
+        run: |
+          echo "Build Date: $(date)" > build-info.txt
+          echo "Commit: ${{ github.sha }}" >> build-info.txt
+          echo "Branch: ${{ github.ref_name }}" >> build-info.txt
+          echo "Flutter Version: $(flutter --version | head -1)" >> build-info.txt
+      
+      - name: Upload Build Info
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-info
+          path: build-info.txt
