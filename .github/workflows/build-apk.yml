@@ -1,9 +1,9 @@
 name: Build Customer App APK
 on:
   push:
-    branches: [ main ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main ]
+    branches: [ main, master ]
   workflow_dispatch:  # Allow manual trigger
 jobs:
   build:
