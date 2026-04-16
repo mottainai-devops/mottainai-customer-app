@@ -14,12 +14,14 @@ class AuthProvider extends ChangeNotifier {
   String? _phone;
   String? _errorMessage;
   bool _otpSent = false;
+  bool _skippedOtp = false;  // true when backend issued token directly (returning customer)
 
   AuthState get state => _state;
   Map<String, dynamic>? get profile => _profile;
   String? get phone => _phone;
   String? get errorMessage => _errorMessage;
   bool get otpSent => _otpSent;
+  bool get skippedOtp => _skippedOtp;
   bool get isAuthenticated => _state == AuthState.authenticated;
 
   // ── Initialize: Check for existing token ─────────────────────────────────
@@ -51,16 +53,38 @@ class AuthProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  // ── Step 1: Request OTP ───────────────────────────────────────────────────
+  // ── Step 1: Request OTP (or direct login for returning customers) ──────────
+  //
+  // If the phone number is already verified, the backend skips Termii entirely
+  // and returns a JWT directly (skipOtp: true). In that case we save the token
+  // and move straight to authenticated state — no OTP entry needed.
+  //
+  // For brand-new numbers the backend sends an SMS and returns skipOtp: false,
+  // and the normal OTP entry flow continues.
   Future<bool> requestOtp(String phone) async {
     _state = AuthState.loading;
     _errorMessage = null;
+    _skippedOtp = false;
     notifyListeners();
 
     try {
       final result = await ApiService.requestOtp(phone);
       if (result['success'] == true) {
         _phone = phone;
+
+        // ── Returning customer: backend issued token directly ──────────────
+        final skipOtp = result['skipOtp'] == true;
+        if (skipOtp && result['token'] != null) {
+          await ApiService.saveToken(result['token'] as String);
+          _profile = result['customer'] as Map<String, dynamic>?;
+          _skippedOtp = true;
+          _otpSent = false;
+          _state = AuthState.authenticated;
+          notifyListeners();
+          return true;
+        }
+
+        // ── New customer: OTP SMS sent, show OTP entry screen ─────────────
         _otpSent = true;
         _state = AuthState.unauthenticated;
         notifyListeners();

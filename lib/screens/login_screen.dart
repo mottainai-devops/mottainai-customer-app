@@ -37,9 +37,15 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     final auth = context.read<AuthProvider>();
     final ok = await auth.requestOtp(phone);
-    if (!ok && mounted) {
+    if (!mounted) return;
+
+    if (ok && auth.skippedOtp) {
+      // Returning customer — backend issued token directly, no OTP needed
+      context.go('/home');
+    } else if (!ok) {
       _showSnack(auth.errorMessage ?? 'Failed to send OTP');
     }
+    // If ok && !skippedOtp: OTP was sent, UI will show OTP entry (handled by Consumer rebuild)
   }
 
   Future<void> _verifyOtp(String otp) async {
