@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_paystack/flutter_paystack.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../constants.dart';
 import '../providers/auth_provider.dart';
 import '../services/api_service.dart';
@@ -17,12 +17,10 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
   Map<String, dynamic>? _invoice;
   bool _loading = true;
   bool _paying = false;
-  final _paystackPlugin = PaystackPlugin();
 
   @override
   void initState() {
     super.initState();
-    _paystackPlugin.initialize(publicKey: AppConstants.paystackPublicKey);
     _loadInvoice();
   }
 
@@ -57,40 +55,113 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     setState(() => _paying = true);
 
     try {
-      // Initiate on backend to get reference
-      final initResult = await ApiService.initiatePayment(
-          widget.invoiceId, amount);
-      final reference = initResult['reference'] as String? ??
-          'MTC-${DateTime.now().millisecondsSinceEpoch}';
-
-      final charge = Charge()
-        ..amount = (amount * 100).toInt() // Paystack uses kobo
-        ..reference = reference
-        ..email = email;
-
-      final response = await _paystackPlugin.checkout(
-        context,
-        method: CheckoutMethod.card,
-        charge: charge,
-      );
-
-      if (!mounted) return;
-
-      if (response.status == true) {
-        // Verify on backend
-        final verifyResult =
-            await ApiService.verifyPayment(response.reference ?? reference);
-        if (verifyResult['success'] == true) {
-          _showSnack('Payment successful! Invoice has been updated.');
-          await _loadInvoice(); // Refresh invoice status
+      // Initiate payment on backend — backend calls Paystack initialize API
+      // and returns an authorization_url for the customer to complete payment
+      final initResult = await ApiService.initiatePayment(widget.invoiceId, amount);
+      
+      if (initResult['success'] == true) {
+        final authUrl = initResult['authorization_url'] as String?;
+        final reference = initResult['reference'] as String?;
+        
+        if (authUrl != null) {
+          // Open Paystack payment page in browser
+          final uri = Uri.parse(authUrl);
+          if (await canLaunchUrl(uri)) {
+            await launchUrl(uri, mode: LaunchMode.externalApplication);
+            // Show instructions to return after payment
+            if (mounted) {
+              _showPaymentInstructions(reference ?? '');
+            }
+          } else {
+            _showSnack('Could not open payment page. Please try again.');
+          }
         } else {
-          _showSnack('Payment received but verification pending. Please contact support if not updated.');
+          _showSnack('Payment initiation failed. Please try again.');
         }
       } else {
-        _showSnack('Payment was not completed.');
+        _showSnack(initResult['message']?.toString() ?? 'Payment initiation failed.');
       }
     } catch (e) {
       _showSnack('Payment error: ${e.toString()}');
+    } finally {
+      if (mounted) setState(() => _paying = false);
+    }
+  }
+
+  void _showPaymentInstructions(String reference) {
+    showDialog(
+      context: context,
+      barrierDismissible: false,
+      builder: (ctx) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        title: const Row(
+          children: [
+            Icon(Icons.payment, color: Color(0xFF1B5E20)),
+            SizedBox(width: 8),
+            Text('Complete Payment'),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'You have been redirected to the Paystack payment page. '
+              'Complete your payment there, then return here and tap "I\'ve Paid" to verify.',
+              style: TextStyle(fontSize: 14),
+            ),
+            if (reference.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              Container(
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Colors.grey[100],
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  'Reference: $reference',
+                  style: const TextStyle(fontSize: 12, fontFamily: 'monospace'),
+                ),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF1B5E20),
+              foregroundColor: Colors.white,
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await _verifyPayment(reference);
+            },
+            child: const Text("I've Paid"),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _verifyPayment(String reference) async {
+    if (reference.isEmpty) return;
+    setState(() => _paying = true);
+    try {
+      final result = await ApiService.verifyPayment(reference);
+      if (result['success'] == true) {
+        _showSnack('Payment verified! Invoice has been updated.');
+        await _loadInvoice();
+      } else {
+        _showSnack(
+            result['message']?.toString() ??
+            'Payment not yet confirmed. Please wait a moment and try again.');
+      }
+    } catch (e) {
+      _showSnack('Verification error: ${e.toString()}');
     } finally {
       if (mounted) setState(() => _paying = false);
     }
