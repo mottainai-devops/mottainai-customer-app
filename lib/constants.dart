@@ -12,7 +12,12 @@ class AppConstants {
   static const String supportWhatsApp = 'https://wa.me/2348000000000';
 
   // ── Paystack ─────────────────────────────────────────────────────────────
-  static const String paystackPublicKey = 'pk_live_REPLACE_WITH_ACTUAL_KEY';
+  /// Live public key — used in the Paystack Popup JS (frontend only)
+  static const String paystackPublicKey = 'pk_live_93159468010649738ce76015bd50e85a599a0e67';
+
+  // ── Termii ───────────────────────────────────────────────────────────────
+  /// Sender ID registered with Termii — must match the live server config
+  static const String termiiSenderId = 'N-Alert';
 
   // ── Storage Keys ─────────────────────────────────────────────────────────
   static const String tokenKey = 'customer_jwt_token';
