@@ -160,6 +160,7 @@ class _InvoiceCard extends StatelessWidget {
     final dueDate = invoice['due_date'] != null
         ? _formatDate(invoice['due_date'].toString())
         : '—';
+    final customerId = invoice['customerId'] ?? invoice['buildingId'] ?? invoice['building_id'];
     final statusColor = _statusColor(status);
 
     return GestureDetector(
@@ -207,6 +208,14 @@ class _InvoiceCard extends StatelessWidget {
                     'Due: $dueDate',
                     style: TextStyle(fontSize: 12, color: Colors.grey[600]),
                   ),
+                  if (customerId != null) ...[  
+                    const SizedBox(height: 2),
+                    Text(
+                      'ID: $customerId',
+                      style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
                 ],
               ),
             ),

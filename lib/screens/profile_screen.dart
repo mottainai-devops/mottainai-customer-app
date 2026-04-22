@@ -97,6 +97,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final name = profile?['fullName'] ?? profile?['phone'] ?? 'Customer';
     final phone = profile?['phone'] ?? '—';
     final buildingIds = profile?['buildingIds'] as List? ?? [];
+    final customerId = profile?['userIdentificationNumber'] as String?;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF8),
@@ -212,10 +213,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 16),
 
-          // Building IDs
+          // Customer ID
+          if (customerId != null)
+            _sectionCard(
+              title: 'Customer ID',
+              children: [
+                Row(
+                  children: [
+                    const Icon(Icons.badge_outlined,
+                        size: 18, color: Color(0xFF1B5E20)),
+                    const SizedBox(width: 10),
+                    Text(
+                      customerId,
+                      style: const TextStyle(
+                          fontSize: 15,
+                          fontWeight: FontWeight.w600,
+                          letterSpacing: 0.5),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Use this ID when contacting support or referencing your account.',
+                  style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                ),
+              ],
+            ),
+
+          const SizedBox(height: 16),
+
+          // My Properties
           if (buildingIds.isNotEmpty)
             _sectionCard(
-              title: 'Building IDs',
+              title: 'My Properties',
               children: buildingIds
                   .map((id) => Padding(
                         padding: const EdgeInsets.symmetric(vertical: 4),
@@ -224,10 +254,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             const Icon(Icons.business_outlined,
                                 size: 16, color: Color(0xFF1B5E20)),
                             const SizedBox(width: 8),
-                            Text(id.toString(),
-                                style: const TextStyle(
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.w500)),
+                            Expanded(
+                              child: Text(id.toString(),
+                                  style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w500)),
+                            ),
                           ],
                         ),
                       ))

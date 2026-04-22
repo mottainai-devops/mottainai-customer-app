@@ -154,7 +154,7 @@ class AuthProvider extends ChangeNotifier {
         notifyListeners();
         return true;
       } else {
-        _errorMessage = result['message'] ?? 'Building ID not found.';
+        _errorMessage = result['message'] ?? 'Customer ID not found.';
         _state = AuthState.unauthenticated;
         notifyListeners();
         return false;

@@ -64,7 +64,7 @@ class SupportScreen extends StatelessWidget {
           _faqItem(
             question: 'My phone number is not recognised. What do I do?',
             answer:
-                'On the login screen, tap "Don\'t have your phone? Use Building ID" and enter your Building ID and phone number to access your account.',
+                'On the login screen, tap "Don\'t have your phone? Use Customer ID" and enter your Customer ID and phone number to access your account.',
           ),
           _faqItem(
             question: 'How do I update my contact details?',

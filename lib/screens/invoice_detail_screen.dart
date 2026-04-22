@@ -259,7 +259,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                   ? _formatDate(inv['due_date'].toString())
                   : '—'),
           _detailRow('Customer', inv['customer_name'] ?? '—'),
-          _detailRow('Building ID', inv['building_id'] ?? '—'),
+          _detailRow('Customer ID', inv['customerId'] ?? inv['buildingId'] ?? inv['building_id'] ?? '—'),
         ]),
         const SizedBox(height: 16),
 

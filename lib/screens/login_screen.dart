@@ -63,7 +63,7 @@ class _LoginScreenState extends State<LoginScreen> {
     final buildingId = _buildingIdController.text.trim();
     final phone = _buildingPhoneController.text.trim();
     if (buildingId.isEmpty || phone.isEmpty) {
-      _showSnack('Please enter both Building ID and phone number');
+      _showSnack('Please enter both Customer ID and phone number');
       return;
     }
     final auth = context.read<AuthProvider>();
@@ -71,7 +71,7 @@ class _LoginScreenState extends State<LoginScreen> {
     if (ok && mounted) {
       context.go('/home');
     } else if (mounted) {
-      _showSnack(auth.errorMessage ?? 'Building ID not found');
+      _showSnack(auth.errorMessage ?? 'Customer ID not found');
     }
   }
 
@@ -115,7 +115,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 32),
                   Text(
                     _showBuildingIdFallback
-                        ? 'Use Building ID'
+                        ? 'Use Customer ID'
                         : auth.otpSent
                             ? 'Enter OTP'
                             : 'Welcome Back',
@@ -129,7 +129,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   const SizedBox(height: 8),
                   Text(
                     _showBuildingIdFallback
-                        ? 'Enter your Building ID and phone number to access your account'
+                        ? 'Enter your Customer ID and phone number to access your account'
                         : auth.otpSent
                             ? 'We sent a 6-digit code to ${auth.phone}'
                             : 'Enter your phone number to get started',
@@ -143,7 +143,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
                   // ── Building ID Fallback ──────────────────────────────────
                   if (_showBuildingIdFallback) ...[
-                    _buildLabel('Building ID'),
+                    _buildLabel('Customer ID'),
                     const SizedBox(height: 8),
                     TextField(
                       controller: _buildingIdController,
@@ -268,7 +268,7 @@ class _LoginScreenState extends State<LoginScreen> {
                         onPressed: () =>
                             setState(() => _showBuildingIdFallback = true),
                         child: Text(
-                          "Don't have your phone? Use Building ID",
+                          "Don't have your phone? Use Customer ID",
                           style: TextStyle(
                             color: Colors.grey[600],
                             fontSize: 13,
