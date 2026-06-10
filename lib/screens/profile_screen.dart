@@ -97,7 +97,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final name = profile?['fullName'] ?? profile?['phone'] ?? 'Customer';
     final phone = profile?['phone'] ?? '—';
     final buildingIds = profile?['buildingIds'] as List? ?? [];
-    final customerId = profile?['userIdentificationNumber'] as String?;
+    // ArcGIS-native Customer IDs: arcgisBuildingId + unitCode composite (v3.5.0)
+    // Falls back to buildingIds if customerIds not yet returned by backend
+    final customerIds = profile?['customerIds'] as List? ?? buildingIds;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAF8),
@@ -213,25 +215,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
           const SizedBox(height: 16),
 
-          // Customer ID
-          if (customerId != null)
+          // Customer ID(s) — ArcGIS-native composite (arcgisBuildingId + unitCode)
+          if (customerIds.isNotEmpty)
             _sectionCard(
-              title: 'Customer ID',
+              title: customerIds.length == 1 ? 'Customer ID' : 'Customer IDs',
               children: [
-                Row(
-                  children: [
-                    const Icon(Icons.badge_outlined,
-                        size: 18, color: Color(0xFF1B5E20)),
-                    const SizedBox(width: 10),
-                    Text(
-                      customerId,
-                      style: const TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5),
-                    ),
-                  ],
-                ),
+                ...customerIds.map((cid) => Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.badge_outlined,
+                          size: 18, color: Color(0xFF1B5E20)),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          cid.toString(),
+                          style: const TextStyle(
+                              fontSize: 14,
+                              fontWeight: FontWeight.w600,
+                              letterSpacing: 0.3),
+                        ),
+                      ),
+                    ],
+                  ),
+                )),
                 const SizedBox(height: 4),
                 Text(
                   'Use this ID when contacting support or referencing your account.',
